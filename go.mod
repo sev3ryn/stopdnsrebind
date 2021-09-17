@@ -1,4 +1,4 @@
-module github.com/4390c336/stopdnsrebind
+module github.com/sev3ryn/stopdnsrebind
 
 go 1.16
 

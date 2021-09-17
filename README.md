@@ -4,6 +4,8 @@
 
 *stopdnsrebind* - Coredns plugin that implement `--stop-dns-rebind` from dnsmasq.
 
+Forked from github.com/4390c336/stopdnsrebind while adding public_nets filter
+
 ## Description
 
 With `stopdnsrebind` enabled, users are able to block addresses from upstream nameservers which are in the private ranges plus ranges specified in public_nets parameter
