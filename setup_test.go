@@ -7,23 +7,22 @@ import (
 )
 
 func Test_setup(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		config  string
 		wantErr bool
 	}{
 		{
-			"allow internal.example.org",
+			"public net",
 			`stopdnsrebind {
-				allow internal.example.org.
+				public_nets 8.8.8.8/24
 			}`,
 			false,
 		},
 		{
-			"allow multiple",
+			"public net multiple",
 			`stopdnsrebind {
-				allow internal.example.org. internal.example.net.
+				public_nets 8.8.8.0/10 9.9.9.0/16
 			}`,
 			false,
 		},
@@ -35,9 +34,9 @@ func Test_setup(t *testing.T) {
 			true,
 		},
 		{
-			"not a valid domain",
+			"not a valid range",
 			`stopdnsrebind {
-				allow ..example.org.
+				public_nets 8.8.8.z
 			}`,
 			true,
 		},

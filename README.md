@@ -6,17 +6,17 @@
 
 ## Description
 
-With `stopdnsrebind` enabled, users are able to block addresses from upstream nameservers which are in the private ranges.
+With `stopdnsrebind` enabled, users are able to block addresses from upstream nameservers which are in the private ranges plus ranges specified in public_nets parameter
 
 ## Syntax
 
 ```
-stopdnsrebind [ZONES...] {
-    allow [ZONES...]
+stopdnsrebind {
+    public_nets [IP RANGE]
 }
 ```
 
-- **ZONES** zones that are allowed o resolve to private addresses
+- **IP RANGE** public ip range not allowed to resolve
 
 ## Examples
 
@@ -25,7 +25,7 @@ To demonstrate the usage of plugin stopdnsrebind, here we provide some typical e
 ~~~ corefile
 . {
     stopdnsrebind {
-        allow internal.example.org
+        public_nets 8.8.8.0/24
     }
 }
 ~~~

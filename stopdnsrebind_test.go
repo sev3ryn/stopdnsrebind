@@ -8,6 +8,7 @@ import (
 	"github.com/coredns/coredns/plugin/pkg/dnstest"
 	"github.com/coredns/coredns/plugin/test"
 	"github.com/miekg/dns"
+	"inet.af/netaddr"
 )
 
 // testHandler
@@ -19,7 +20,6 @@ type testHandler struct {
 type testcase struct {
 	Expected int
 	test     test.Case
-	config   string
 }
 
 func (t *testHandler) Name() string { return "test-handler" }
@@ -36,7 +36,7 @@ func (t *testHandler) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns
 }
 
 func TestBlockingResponse(t *testing.T) {
-	var tests = []testcase{
+	tests := []testcase{
 		{
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
@@ -46,9 +46,25 @@ func TestBlockingResponse(t *testing.T) {
 			},
 		},
 		{
+			Expected: dns.RcodeSuccess,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 8.8.9.8")},
+				Qname:  "example.org.",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 169.254.169.254")},
+				Answer: []dns.RR{test.A("example.org. 0 IN A 8.8.8.8")},
+				Qname:  "example.org.",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 10.10.10.10")},
 				Qname:  "example.org.",
 				Qtype:  dns.TypeA,
 			},
@@ -96,14 +112,16 @@ func TestBlockingResponse(t *testing.T) {
 			Response: &tc.test,
 			Next:     nil,
 		}
-		o := &Stopdnsrebind{Next: tHandler}
+		var b netaddr.IPSetBuilder
+		b.AddPrefix(netaddr.MustParseIPPrefix("8.8.8.0/24"))
+		net, err := b.IPSet()
+		if err != nil {
+			t.Errorf("Error building IPSet: %s", err)
+		}
+		o := &Stopdnsrebind{Next: tHandler, PublicNets: net}
 		w := dnstest.NewRecorder(&test.ResponseWriter{})
 
-		if tc.config != "" {
-			o.AllowList = []string{"hello.com."}
-		}
-		_, err := o.ServeDNS(context.TODO(), w, m)
-
+		_, err = o.ServeDNS(context.TODO(), w, m)
 		if err != nil {
 			t.Errorf("Error %q", err)
 		}
